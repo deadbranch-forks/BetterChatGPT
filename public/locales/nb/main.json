@@ -24,6 +24,8 @@
   "setting": "Innstillinger",
   "image": "Bilde",
   "autoTitle": "Auto generer tittel",
+  "advancedMode": "Avansert modus",
+  "inlineLatex": "Inline Latex",
   "prompt": "Oppgave",
   "promptLibrary": "Oppgavebibliotek",
   "name": "Navn",
@@ -37,5 +39,5 @@
   "cloneChat": "Klone chat",
   "cloned": "Klonet",
   "enterToSubmit": "Trykk enter for å sende",
-  "submitPlaceholder": "Type a message or select [/] for a predefined prompt..."
+  "submitPlaceholder": "Type a message or click [/] for prompts..."
 }

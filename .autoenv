@@ -1,0 +1,2 @@
+conda activate $( basename $( pwd ) )
+AUTOENV_ENABLE_LEAVE="true"

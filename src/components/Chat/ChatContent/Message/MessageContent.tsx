@@ -43,10 +43,11 @@ const MessageContent = ({
   sticky?: boolean;
 }) => {
   const [isEdit, setIsEdit] = useState<boolean>(sticky);
+  const advancedMode = useStore((state) => state.advancedMode);
 
   return (
     <div className='relative flex flex-col gap-1 md:gap-3 lg:w-[calc(100%-115px)]'>
-      <div className='flex flex-grow flex-col gap-3'></div>
+      {advancedMode && <div className='flex flex-grow flex-col gap-3'></div>}
       {isEdit ? (
         <EditView
           content={content}
@@ -85,6 +86,7 @@ const ContentView = React.memo(
     const lastMessageIndex = useStore((state) =>
       state.chats ? state.chats[state.currentChatIndex].messages.length - 1 : 0
     );
+    const inlineLatex = useStore((state) => state.inlineLatex);
 
     const handleDelete = () => {
       const updatedChats: ChatInterface[] = JSON.parse(
@@ -138,7 +140,7 @@ const ContentView = React.memo(
           <ReactMarkdown
             remarkPlugins={[
               remarkGfm,
-              [remarkMath, { singleDollarTextMath: false }],
+              [remarkMath, { singleDollarTextMath: inlineLatex }],
             ]}
             rehypePlugins={[
               rehypeKatex,
@@ -369,7 +371,7 @@ const EditView = ({
   };
 
   const handleSave = () => {
-    if (sticky && _content === '') return;
+    if (sticky && (_content === '' || useStore.getState().generating)) return;
     const updatedChats: ChatInterface[] = JSON.parse(
       JSON.stringify(useStore.getState().chats)
     );
@@ -387,6 +389,7 @@ const EditView = ({
 
   const { handleSubmit } = useSubmit();
   const handleSaveAndSubmit = () => {
+    if (useStore.getState().generating) return;
     const updatedChats: ChatInterface[] = JSON.parse(
       JSON.stringify(useStore.getState().chats)
     );
@@ -481,13 +484,17 @@ const EditViewButtons = React.memo(
     _setContent: React.Dispatch<React.SetStateAction<string>>;
   }) => {
     const { t } = useTranslation();
+    const generating = useStore.getState().generating;
+    const advancedMode = useStore((state) => state.advancedMode);
 
     return (
       <div className='flex'>
         <div className='flex-1 text-center mt-2 flex justify-center'>
           {sticky && (
             <button
-              className='btn relative mr-2 btn-primary'
+              className={`btn relative mr-2 btn-primary ${
+                generating ? 'cursor-not-allowed opacity-40' : ''
+              }`}
               onClick={handleSaveAndSubmit}
             >
               <div className='flex items-center justify-center gap-2'>
@@ -498,7 +505,11 @@ const EditViewButtons = React.memo(
 
           <button
             className={`btn relative mr-2 ${
-              sticky ? 'btn-neutral' : 'btn-primary'
+              sticky
+                ? `btn-neutral ${
+                    generating ? 'cursor-not-allowed opacity-40' : ''
+                  }`
+                : 'btn-primary'
             }`}
             onClick={handleSave}
           >
@@ -511,7 +522,7 @@ const EditViewButtons = React.memo(
             <button
               className='btn relative mr-2 btn-neutral'
               onClick={() => {
-                setIsModalOpen(true);
+                !generating && setIsModalOpen(true);
               }}
             >
               <div className='flex items-center justify-center gap-2'>
@@ -531,7 +542,7 @@ const EditViewButtons = React.memo(
             </button>
           )}
         </div>
-        {sticky && <TokenCount />}
+        {sticky && advancedMode && <TokenCount />}
         <CommandPrompt _setContent={_setContent} />
       </div>
     );
